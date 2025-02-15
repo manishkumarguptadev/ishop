@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Poppins } from "next/font/google";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -23,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/lib/actions/user.actions";
 import { SignupFormSchema } from "@/lib/validator";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,6 +34,10 @@ const font = Poppins({
   weight: ["600"],
 });
 export default function SignupForm() {
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof SignupFormSchema>>({
     resolver: zodResolver(SignupFormSchema),
     defaultValues: {
@@ -43,10 +49,36 @@ export default function SignupForm() {
   });
 
   const onSubmit = (values: z.infer<typeof SignupFormSchema>) => {
-    console.log(values);
+    setError("");
+    startTransition(() => {
+      signUp(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
+      });
+    });
   };
 
-  return (
+  return success ? (
+    <Card className="w-[400px] shadow-md">
+      <CardHeader className="space-y-8 text-center">
+        <Link href="/" className="flex-center">
+          <Image
+            priority={true}
+            src="/images/logo.svg"
+            width={60}
+            height={60}
+            alt="ishop logo"
+          />
+        </Link>
+        <CardTitle>Your account has been created</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button asChild className="w-full">
+          <Link href="/sign-in">Login to your account</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  ) : (
     <Card className="w-[400px] shadow-md">
       <CardHeader className="space-y-4">
         <Link href="/" className="flex-center">
@@ -78,7 +110,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
+                        disabled={isPending}
                         placeholder="John Doe"
                       />
                     </FormControl>
@@ -95,7 +127,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
+                        disabled={isPending}
                         placeholder="john.doe@example.com"
                         type="email"
                       />
@@ -113,7 +145,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
+                        disabled={isPending}
                         placeholder="******"
                         type="password"
                       />
@@ -131,7 +163,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
+                        disabled={isPending}
                         placeholder="******"
                         type="password"
                       />
@@ -141,8 +173,8 @@ export default function SignupForm() {
                 )}
               />
             </div>
-            <FormError message={"error"} />
-            <Button disabled={false} type="submit" className="w-full">
+            <FormError message={error} />
+            <Button disabled={isPending} type="submit" className="w-full">
               Sign Up
             </Button>
           </form>
