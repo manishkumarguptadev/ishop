@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import Link from "next/link";
 import { ModeToggle } from "./mode-toggle";
+import { AuthStatus } from "./AuthStatus";
 export default function menu() {
   return (
     <>
@@ -21,12 +22,8 @@ export default function menu() {
               Cart
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/sign-in">
-              <UserIcon />
-              Sign In
-            </Link>
-          </Button>
+
+          <AuthStatus />
         </nav>
         <nav className="md:hidden">
           <Sheet>
@@ -42,12 +39,7 @@ export default function menu() {
                   Cart
                 </Link>
               </Button>
-              <Button asChild>
-                <Link href="/sign-in">
-                  <UserIcon />
-                  Sign In
-                </Link>
-              </Button>
+              <AuthStatus />
               <SheetDescription></SheetDescription>
             </SheetContent>
           </Sheet>
