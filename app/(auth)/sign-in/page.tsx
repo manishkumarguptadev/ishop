@@ -18,13 +18,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { SigninFormSchema } from "@/lib/validator";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 export default function SigninForm() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || DEFAULT_LOGIN_REDIRECT;
+
+  const [error, setError] = useState<string | undefined>("");
+
   const form = useForm<z.infer<typeof SigninFormSchema>>({
     resolver: zodResolver(SigninFormSchema),
     defaultValues: {
@@ -33,8 +42,13 @@ export default function SigninForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof SigninFormSchema>) => {
-    console.log(values);
+  const {
+    formState: { isSubmitting },
+  } = form;
+
+  const onSubmit = async (values: z.infer<typeof SigninFormSchema>) => {
+    setError("");
+    signIn("credentials", { ...values, callbackUrl });
   };
 
   return (
@@ -69,9 +83,9 @@ export default function SigninForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
                         placeholder="john.doe@example.com"
                         type="email"
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -87,9 +101,9 @@ export default function SigninForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={false}
                         placeholder="******"
                         type="password"
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -105,8 +119,8 @@ export default function SigninForm() {
                 <Link href="/auth/reset">Forgot password?</Link>
               </Button>
             </div>
-            <FormError message={"error"} />
-            <Button disabled={false} type="submit" className="w-full">
+            <FormError message={error} />
+            <Button disabled={isSubmitting} type="submit" className="w-full">
               Sign In
             </Button>
           </form>
