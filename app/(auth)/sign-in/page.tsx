@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { getAuthErrorMessage } from "@/lib/error";
 import { SigninFormSchema } from "@/lib/validator";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,13 +25,18 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 export default function SigninForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || DEFAULT_LOGIN_REDIRECT;
+  const urlError = searchParams.get("error") || "";
+
+  useEffect(() => {
+    setError(getAuthErrorMessage(urlError));
+  }, []);
 
   const [error, setError] = useState<string | undefined>("");
 
